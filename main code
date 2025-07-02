@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Esports Team Coordinator Dashboard</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎮</text></svg>">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d1b1b 50%, #0f0f0f 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: #ff4444;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(0,0,0,0.7);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid #333;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(255,68,68,0.3);
+            background: linear-gradient(135deg, #ff4444 0%, #cc0000 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+            color: #ccc;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+            border: 1px solid #333;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(255,68,68,0.2);
+            border-color: #ff4444;
+        }
+
+        .card h2 {
+            color: #ff4444;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            border-bottom: 2px solid #333;
+            padding-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #ccc;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #333;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            background: #2a2a2a;
+            color: #e0e0e0;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #ff4444;
+            box-shadow: 0 0 0 3px rgba(255, 68, 68, 0.2);
+            transform: translateY(-1px);
+            background: #333;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #ff4444 0%, #cc0000 100%);
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 68, 68, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #444 0%, #666 100%);
+            color: #fff;
+        }
+
+        .btn-secondary:hover {
+            box-shadow: 0 5px 15px rgba(102, 102, 102, 0.4);
+        }
+
+        .btn-export {
+            background: linear-gradient(135deg, #ff6666 0%, #ff4444 100%);
+            color: #fff;
+        }
+
+        .matches-list {
+            grid-column: 1 / -1;
+        }
+
+        .match-item {
+            background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
+            padding: 20px;
+            margin-bottom: 15px;
+            border-radius: 12px;
+            border-left: 4px solid #ff4444;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid #333;
+        }
+
+        .match-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 68, 68, 0.1), transparent);
+            transition: right 0.5s;
+        }
+
+        .match-item:hover::before {
+            right: 100%;
+        }
+
+        .match-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(255,68,68,0.2);
+            border-color: #ff4444;
+        }
+
+        .match-info {
+            flex-grow: 1;
+        }
+
+        .match-info strong {
+            color: #ff4444;
+        }
+
+        .match-info small {
+            color: #999;
+            display: block;
+            margin-top: 5px;
+        }
+
+        .match-result {
+            padding: 8px 16px;
+            border-radius: 25px;
+            color: white;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 0.9em;
+            min-width: 60px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+        }
+
+        .win { 
+            background: linear-gradient(135deg, #ff4444 0%, #cc0000 100%);
+        }
+        .loss { 
+            background: linear-gradient(135deg, #666 0%, #333 100%);
+        }
+        .draw { 
+            background: linear-gradient(135deg, #ff6666 0%, #ff4444 100%);
+            color: #fff;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-box {
+            background: linear-gradient(135deg, #ff4444 0%, #cc0000 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            transition: transform 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 68, 68, 0.3);
+            border: 1px solid #ff6666;
+        }
+
+        .stat-box:hover {
+            transform: translateY(-3px) scale(1.05);
+        }
+
+        .stat-number {
+            font-size: 2.2em;
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .quick-add {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .quick-btn {
+            padding: 12px 8px;
+            border: 2px solid #ff4444;
+            background: #2a2a2a;
+            color: #ff4444;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        .quick-btn:hover, .quick-btn.active {
+            background: #ff4444;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 68, 68, 0.3);
+        }
+
+        .data-section {
+            background: rgba(42, 42, 42, 0.8);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border: 1px solid #333;
+        }
+
+        .data-section h3 {
+            color: #ff4444;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        .export-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .password-section {
+            background: rgba(255, 68, 68, 0.1);
+            border: 2px solid #ff4444;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #ff4444;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(255,68,68,0.4);
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+            border: 1px solid #ff6666;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+            
+            .quick-add {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            .header h1 {
+                font-size: 2em;
+            }
+
+            .container {
+                padding: 10px;
+            }
+
+            .card {
+                padding: 20px;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 12px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #1a1a1a;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #ff4444;
+            border-radius: 6px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #cc0000;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎮 Team Coordinator Dashboard</h1>
+            <p>Easy match tracking for esports teams • Free hosting on GitHub Pages</p>
+        </div>
+
+        <!-- Password Protection (Optional) -->
+        <div class="password-section" id="passwordSection" style="display: none;">
+            <h3>🔐 Access Control</h3>
+            <p>Enter coordinator password to access the dashboard:</p>
+            <input type="password" id="passwordInput" placeholder="Enter password">
+            <button class="btn" onclick="checkPassword()">Login</button>
+        </div>
+
+        <div id="mainDashboard">
+            <div class="dashboard">
+                <!-- Quick Add Match Form -->
+                <div class="card">
+                    <h2>📝 Add Match Result</h2>
+                    
+                    <div class="form-group">
+                        <label for="teamSelect">Your Team</label>
+                        <select id="teamSelect">
+                            <option value="">Select Team...</option>
+                            <optgroup label="Valorant">
+                                <option value="Valorant Premiere">Valorant Premiere</option>
+                                <option value="Valorant Alpha">Valorant Alpha</option>
+                                <option value="Valorant Pristine">Valorant Pristine</option>
+                            </optgroup>
+                            <optgroup label="League of Legends">
+                                <option value="League of Legends Premiere">League of Legends Premiere</option>
+                                <option value="League of Legends Titans">League of Legends Titans</option>
+                            </optgroup>
+                            <optgroup label="Overwatch">
+                                <option value="Overwatch Premiere">Overwatch Premiere</option>
+                                <option value="Overwatch Horizon">Overwatch Horizon</option>
+                                <option value="Overwatch Circuit">Overwatch Circuit</option>
+                            </optgroup>
+                            <optgroup label="Super Smash Bros Ultimate">
+                                <option value="SSBU Red">SSBU Red</option>
+                                <option value="SSBU White">SSBU White</option>
+                                <option value="SSBU Black">SSBU Black</option>
+                            </optgroup>
+                            <optgroup label="Rocket League">
+                                <option value="Rocket League Red">Rocket League Red</option>
+                                <option value="Rocket League White">Rocket League White</option>
+                            </optgroup>
+                            <optgroup label="Counter-Strike 2">
+                                <option value="CS2 Red">CS2 Red</option>
+                                <option value="CS2 White">CS2 White</option>
+                            </optgroup>
+                            <optgroup label="Apex Legends">
+                                <option value="Apex Legends Red">Apex Legends Red</option>
+                                <option value="Apex Legends White">Apex Legends White</option>
+                            </optgroup>
+                            <optgroup label="Fortnite">
+                                <option value="Fortnite Red">Fortnite Red</option>
+                                <option value="Fortnite White">Fortnite White</option>
+                                <option value="Fortnite Black">Fortnite Black</option>
+                                <option value="Fortnite Teal">Fortnite Teal</option>
+                            </optgroup>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="opponent">Opponent Team</label>
+                        <input type="text" id="opponent" placeholder="Enter opponent name">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Match Result</label>
+                        <div class="quick-add">
+                            <button class="quick-btn" onclick="selectResult('win')">✅ Win</button>
+                            <button class="quick-btn" onclick="selectResult('loss')">❌ Loss</button>
+                            <button class="quick-btn" onclick="selectResult('draw')">🤝 Draw</button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="matchDate">Match Date</label>
+                        <input type="date" id="matchDate">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="tournament">Tournament/League</label>
+                        <input type="text" id="tournament" placeholder="e.g., Winter Championship">
+                    </div>
+
+                    <div class="form-group" id="scoreGroup">
+                        <label for="mapScore" id="scoreLabel">Score</label>
+                        <input type="text" id="mapScore" placeholder="Enter score">
+                    </div>
+
+                    <div class="form-group" id="gameSpecificGroup" style="display: none;">
+                        <label for="gameSpecific" id="gameSpecificLabel">Additional Info</label>
+                        <input type="text" id="gameSpecific" placeholder="">
+                    </div>
+
+                    <button class="btn" onclick="addMatch()">
+                        <span id="addButtonText">Add Match</span>
+                    </button>
+                </div>
+
+                <!-- Data Management -->
+                <div class="card">
+                    <h2>💾 Data Management</h2>
+                    
+                    <div class="data-section">
+                        <h3>Export Data</h3>
+                        <p>Download your match data for backup or analysis</p>
+                        <div class="export-buttons">
+                            <button class="btn btn-export" onclick="exportToCSV()">📊 Export CSV</button>
+                            <button class="btn btn-export" onclick="exportToJSON()">📄 Export JSON</button>
+                        </div>
+                    </div>
+
+                    <div class="data-section">
+                        <h3>Import Data</h3>
+                        <p>Upload CSV file to import multiple matches</p>
+                        <input type="file" id="csvFile" accept=".csv" style="margin-bottom: 10px;">
+                        <button class="btn btn-secondary" onclick="importCSV()">📥 Import CSV</button>
+                    </div>
+
+                    <div class="data-section">
+                        <h3>Clear Data</h3>
+                        <p>⚠️ This will delete all stored matches</p>
+                        <button class="btn" style="background: linear-gradient(135deg, #666 0%, #333 100%);" onclick="clearAllData()">🗑️ Clear All Data</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Team Stats -->
+            <div class="card">
+                <h2>📊 Team Statistics</h2>
+                <div class="form-group">
+                    <label for="statsTeamSelect">Select Team for Stats</label>
+                    <select id="statsTeamSelect" onchange="updateTeamStats()">
+                        <option value="">All Teams</option>
+                        <option value="Dragons">Dragons</option>
+                        <option value="Phoenix">Phoenix</option>
+                        <option value="Titans">Titans</option>
+                        <option value="Wolves">Wolves</option>
+                        <option value="Eagles">Eagles</option>
+                        <option value="Lions">Lions</option>
+                    </select>
+                </div>
+                <div id="teamStats" class="stats-grid">
+                    <div class="stat-box">
+                        <span class="stat-number" id="totalMatches">0</span>
+                        <span class="stat-label">Total Matches</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-number" id="wins">0</span>
+                        <span class="stat-label">Wins</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-number" id="losses">0</span>
+                        <span class="stat-label">Losses</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-number" id="winRate">0%</span>
+                        <span class="stat-label">Win Rate</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Matches -->
+            <div class="card matches-list">
+                <h2>📈 Recent Matches</h2>
+                <div id="matchesList">
+                    <!-- Matches will be populated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div id="notification" class="notification"></div>
+
+    <script>
+        // Configuration
+        const CONFIG = {
+            enablePasswordProtection: false, // Set to true to enable password
+            password: "esports2024", // Change this password
+            maxMatches: 1000, // Maximum matches to store
+            autoExport: true // Auto-export data weekly
+        };
+
+        // Data storage (uses localStorage for persistence)
+        let matches = JSON.parse(localStorage.getItem('esportsMatches') || '[]');
+        let selectedResult = '';
+
+        // Team selection handler for game-specific fields
+        function handleTeamSelection() {
+            const team = document.getElementById('teamSelect').value;
+            const scoreLabel = document.getElementById('scoreLabel');
+            const scoreInput = document.getElementById('mapScore');
+            const gameSpecificGroup = document.getElementById('gameSpecificGroup');
+            const gameSpecificInput = document.getElementById('gameSpecific');
+            const gameSpecificLabel = document.getElementById('gameSpecificLabel');
+
+            // Reset visibility
+            gameSpecificGroup.style.display = 'none';
+
+            if (team.startsWith('Valorant')) {
+                scoreLabel.textContent = 'Score (Rounds)';
+                scoreInput.placeholder = 'e.g., 13-11, 13-8';
+                gameSpecificLabel.textContent = 'Maps Played';
+                gameSpecificInput.placeholder = 'e.g., Bind, Haven, Ascent';
+                gameSpecificGroup.style.display = 'block';
+            } else if (team.startsWith('League of Legends')) {
+                scoreLabel.textContent = 'Game Score';
+                scoreInput.placeholder = 'e.g., 2-1, 3-0';
+                gameSpecificLabel.textContent = 'Total Game Time';
+                gameSpecificInput.placeholder = 'e.g., 35:24, 28:45, 42:12';
+                gameSpecificGroup.style.display = 'block';
+            } else if (team.startsWith('Overwatch')) {
+                scoreLabel.textContent = 'Map Score';
+                scoreInput.placeholder = 'e.g., 3-2, 3-1';
+                gameSpecificLabel.textContent = 'Maps Played';
+                gameSpecificInput.placeholder = 'e.g., King\'s Row, Hanamura, Gibraltar';
+                gameSpecificGroup.style.display = 'block';
+            } else if (team.startsWith('SSBU')) {
+                scoreLabel.textContent = 'Set Score';
+                scoreInput.placeholder = 'e.g., 3-2, 3-0';
+                gameSpecificLabel.textContent = 'Character(s) Used';
+                gameSpecificInput.placeholder = 'e.g., Fox, Falco, Marth';
+                gameSpecificGroup.style.display = 'block';
+            } else if (team.startsWith('Rocket League')) {
+                scoreLabel.textContent = 'Game Score';
+                scoreInput.placeholder = 'e.g., 4-2, 3-1';
+                gameSpecificLabel.textContent = 'Goals/Saves/Assists';
+                gameSpecificInput.placeholder = 'e.g., 2G/3S/1A';
+                gameSpecificGroup.style.display = 'block';
+            } else if (team.startsWith('CS2')) {
+                scoreLabel.textContent = 'Round Score';
+                scoreInput.placeholder = 'e.g., 16-14, 16-12';
+                gameSpecificLabel.textContent = 'Maps Played';
+                gameSpecificInput.placeholder = 'e.g., Dust2, Mirage, Inferno';
+                gameSpecificGroup.style.display = 'block';
+            } else if (team.startsWith('Apex Legends')) {
+                scoreLabel.textContent = 'Placement';
+                scoreInput.placeholder = 'e.g., 1st, 3rd, 8th';
+                gameSpecificLabel.textContent = 'Kills/Damage';
+                gameSpecificInput.placeholder = 'e.g., 12K/2847D';
+                gameSpecificGroup.style.display = 'block';
+            } else if (team.startsWith('Fortnite')) {
+                scoreLabel.textContent = 'Placement';
+                scoreInput.placeholder = 'e.g., Victory Royale, 2nd, 5th';
+                gameSpecificLabel.textContent = 'Eliminations';
+                gameSpecificInput.placeholder = 'e.g., 8 eliminations';
+                gameSpecificGroup.style.display = 'block';
+            } else {
+                scoreLabel.textContent = 'Score';
+                scoreInput.placeholder = 'Enter score';
+            }
+        }
+
+        // Add event listener for team selection
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('teamSelect').addEventListener('change', handleTeamSelection);
+            if (CONFIG.enablePasswordProtection) {
+                checkPasswordRequired();
+            }
+            setTodayDate();
+            updateDisplay();
+            loadTeamStats();
+        });
+
+        // Password protection
+        function checkPasswordRequired() {
+            const authenticated = localStorage.getItem('esportsAuth');
+            if (!authenticated) {
+                document.getElementById('passwordSection').style.display = 'block';
+                document.getElementById('mainDashboard').style.display = 'none';
+            }
+        }
+
+        function checkPassword() {
+            const password = document.getElementById('passwordInput').value;
+            if (password === CONFIG.password) {
+                localStorage.setItem('esportsAuth', 'true');
+                document.getElementById('passwordSection').style.display = 'none';
+                document.getElementById('mainDashboard').style.display = 'block';
+                showNotification('Access granted! Welcome coordinator.', 'success');
+            } else {
+                showNotification('Incorrect password. Please try again.', 'error');
+            }
+        }
+
+        // Result selection
+        function selectResult(result) {
+            selectedResult = result;
+            document.querySelectorAll('.quick-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        // Add match
+        function addMatch() {
+            const team = document.getElementById('teamSelect').value;
+            const opponent = document.getElementById('opponent').value;
+            const date = document.getElementById('matchDate').value;
+            const tournament = document.getElementById('tournament').value;
+            const score = document.getElementById('mapScore').value;
+
+            if (!team || !opponent || !selectedResult || !date) {
+                showNotification('Please fill in all required fields (Team, Opponent, Result, Date)', 'error');
+                return;
+            }
+
+            // Show loading
+            const btn = document.getElementById('addButtonText');
+            const originalText = btn.textContent;
+            btn.innerHTML = '<span class="loading"></span> Adding...';
+
+            setTimeout(() => {
+                const match = {
+                    id: 'M' + Date.now(),
+                    team: team,
+                    opponent: opponent,
+                    result: selectedResult,
+                    date: date,
+                    tournament: tournament || 'Regular Season',
+                    score: score || 'N/A',
+                    gameSpecific: document.getElementById('gameSpecific').value || '',
+                    timestamp: new Date().toISOString()
+                };
+
+                matches.unshift(match);
+                saveData();
+                clearForm();
+                updateDisplay();
+                
+                btn.textContent = '✅ Match Added!';
+                btn.parentElement.classList.add('pulse');
+                
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.parentElement.classList.remove('pulse');
+                }, 2000);
+
+                showNotification(`Match added: ${team} vs ${opponent} (${selectedResult})`, 'success');
+            }, 500);
+        }
+
+        // Data management
+        function saveData() {
+            try {
+                localStorage.setItem('esportsMatches', JSON.stringify(matches));
+                return true;
+            } catch (e) {
+                showNotification('Storage limit reached. Please export and clear old data.', 'error');
+                return false;
+            }
+        }
+
+        function clearForm() {
+            document.getElementById('opponent').value = '';
+            document.getElementById('tournament').value = '';
+            document.getElementById('mapScore').value = '';
+            document.getElementById('gameSpecific').value = '';
+            document.querySelectorAll('.quick-btn').forEach(btn => btn.classList.remove('active'));
+            selectedResult = '';
+            setTodayDate();
+            // Reset form fields
+            document.getElementById('gameSpecificGroup').style.display = 'none';
+            document.getElementById('scoreLabel').textContent = 'Score';
+            document.getElementById('mapScore').placeholder = 'Enter score';
+        }
+
+        function setTodayDate() {
+            document.getElementById('matchDate').valueAsDate = new Date();
+        }
+
+        function updateDisplay() {
+            updateMatchesList();
+            updateTeamStats();
+        }
+
+        function updateMatchesList() {
+            const matchesList = document.getElementById('matchesList');
+            
+            if (matches.length === 0) {
+                matchesList.innerHTML = '<p style="text-align: center; color: #999; padding: 20px;">No matches recorded yet. Add your first match above!</p>';
+                return;
+            }
+
+            const recentMatches = matches.slice(0, 20); // Show last 20 matches
+            matchesList.innerHTML = recentMatches.map(match => `
+                <div class="match-item">
+                    <div class="match-info">
+                        <strong>${match.team}</strong> vs ${match.opponent}
+                        <small>${match.tournament} • ${formatDate(match.date)} • Score: ${match.score}${match.gameSpecific ? ' • ' + match.gameSpecific : ''}</small>
+                    </div>
+                    <div class="match-result ${match.result}">${match.result}</div>
+                </div>
+            `).join('');
+        }
+
+        function updateTeamStats() {
+            const selectedTeam = document.getElementById('statsTeamSelect').value;
+            const filteredMatches = selectedTeam ? 
+                matches.filter(m => m.team === selectedTeam) : matches;
+
+            const stats = {
+                total: filteredMatches.length,
+                wins: filteredMatches.filter(m => m.result === 'win').length,
+                losses: filteredMatches.filter(m => m.result === 'loss').length,
+                draws: filteredMatches.filter(m => m.result === 'draw').length
+            };
+
+            stats.winRate = stats.total > 0 ? Math.round((stats.wins / stats.total) * 100) : 0;
+
+            document.getElementById('totalMatches').textContent = stats.total;
+            document.getElementById('wins').textContent = stats.wins;
+            document.getElementById('losses').textContent = stats.losses;
+            document.getElementById('winRate').textContent = stats.winRate + '%';
+        }
+
+        function loadTeamStats() {
+            updateTeamStats();
+        }
+
+        function formatDate(dateStr) {
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('en-US', { 
+                month: 'short', 
+                day: 'numeric', 
+                year: 'numeric' 
+            });
+        }
+
+        function showNotification(message, type) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification show ${type}`;
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // Export functions
+        function exportToCSV() {
+            if (matches.length === 0) {
+                showNotification('No data to export', 'error');
+                return;
+            }
+
+            const headers = ['Team', 'Opponent', 'Result', 'Date', 'Tournament', 'Score', 'Game Specific'];
+            const csvContent = [
+                headers.join(','),
+                ...matches.map(match => [
+                    match.team,
+                    match.opponent,
+                    match.result,
+                    match.date,
+                    match.tournament,
+                    match.score,
+                    match.gameSpecific || ''
+                ].join(','))
+            ].join('\n');
+
+            downloadFile(csvContent, 'esports-matches.csv', 'text/csv');
+            showNotification('CSV exported successfully!', 'success');
+        }
+
+        function exportToJSON() {
+            if (matches.length === 0) {
+                showNotification('No data to export', 'error');
+                return;
+            }
+
+            const jsonContent = JSON.stringify(matches, null, 2);
+            downloadFile(jsonContent, 'esports-matches.json', 'application/json');
+            showNotification('JSON exported successfully!', 'success');
+        }
+
+        function downloadFile(content, filename, type) {
+            const blob = new Blob([content], { type });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+
+        function importCSV() {
+            const fileInput = document.getElementById('csvFile');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                showNotification('Please select a CSV file first', 'error');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const csv = e.target.result;
+                    const lines = csv.split('\n');
+                    const headers = lines[0].split(',');
+                    
+                    let imported = 0;
+                    for (let i = 1; i < lines.length; i++) {
+                        const line = lines[i].trim();
+                        if (!line) continue;
+                        
+                        const data = line.split(',');
+                        if (data.length >= 4) {
+                            const match = {
+                                id: 'M' + Date.now() + '_' + i,
+                                team: data[0],
+                                opponent: data[1],
+                                result: data[2],
+                                date: data[3],
+                                tournament: data[4] || 'Imported',
+                                score: data[5] || 'N/A',
+                                gameSpecific: data[6] || '',
+                                timestamp: new Date().toISOString()
+                            };
+                            matches.push(match);
+                            imported++;
+                        }
+                    }
+                    
+                    saveData();
+                    updateDisplay();
+                    showNotification(`Imported ${imported} matches successfully!`, 'success');
+                    fileInput.value = '';
+                } catch (error) {
+                    showNotification('Error importing CSV file', 'error');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function clearAllData() {
+            if (confirm('Are you sure you want to delete all match data? This cannot be undone.')) {
+                matches = [];
+                localStorage.removeItem('esportsMatches');
+                updateDisplay();
+                showNotification('All data cleared successfully', 'success');
+            }
+        }
+    </script>
+</body>
+</html>
